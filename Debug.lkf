@@ -1,0 +1,8 @@
+-z -q -c -heap0x400 -m"./Debug/vmd642uartio.map" -o"./Debug/vmd642uartio.out" -stack0x400 -w -x -i"C:/CCStudio_v3.1/C6000/rtdx/lib" -i"C:/CCStudio_v3.1/C6000/csl/lib" -i"C:/CCStudio_v3.1/C6000/xdais/lib" -i"C:/CCStudio_v3.1/C6000/bios/lib" -i"C:/CCStudio_v3.1/C6000/cgtools/lib"
+"C:\VDM642_EVM\CD_Contents\examples.v2\VMD642_uartio\Debug\dm642main.obj"
+"C:\VDM642_EVM\CD_Contents\examples.v2\VMD642_uartio\Debug\ves_dm642.obj"
+"C:\VDM642_EVM\CD_Contents\examples.v2\VMD642_uartio\Debug\vmd642_cpld.obj"
+"C:\VDM642_EVM\CD_Contents\examples.v2\VMD642_uartio\Debug\vmd642_uart.obj"
+"C:\CCStudio_v3.1\boards\evmdm642\csl\lib\cslDM642.lib"
+"C:\CCStudio_v3.1\C6000\cgtools\lib\rts6400.lib"
+"C:\VDM642_EVM\CD_Contents\examples.v2\VMD642_uartio\vmd642.cmd"

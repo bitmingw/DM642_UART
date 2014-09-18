@@ -1,0 +1,14 @@
+--------------------------  vmd642uartio.pjt - Debug  --------------------------
+[dm642main.c] "C:\CCStudio_v3.1\C6000\cgtools\bin\cl6x" -g -q -fr"../Debug" -i"../include" -d"_DEBUG" -d"CHIP_DM642" -mv6400 -@"../Debug.lkf" "dm642main.c"
+
+[ves_dm642.asm] "C:\CCStudio_v3.1\C6000\cgtools\bin\cl6x" -g -q -fr"../Debug" -i"../include" -d"_DEBUG" -d"CHIP_DM642" -mv6400 -@"../Debug.lkf" "ves_dm642.asm"
+
+[vmd642_cpld.c] "C:\CCStudio_v3.1\C6000\cgtools\bin\cl6x" -g -q -fr"../Debug" -i"../include" -d"_DEBUG" -d"CHIP_DM642" -mv6400 -@"../Debug.lkf" "vmd642_cpld.c"
+
+[vmd642_uart.c] "C:\CCStudio_v3.1\C6000\cgtools\bin\cl6x" -g -q -fr"../Debug" -i"../include" -d"_DEBUG" -d"CHIP_DM642" -mv6400 -@"../Debug.lkf" "vmd642_uart.c"
+
+[Linking...] "C:\CCStudio_v3.1\C6000\cgtools\bin\cl6x" -@"Debug.lkf"
+<Linking>
+
+Build Complete,
+  0 Errors, 0 Warnings, 0 Remarks.

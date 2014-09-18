@@ -1,0 +1,6 @@
+*.map
+*.obj
+*.out
+*.paf2
+*.sbl
+vmd642uartio.CS_/*
