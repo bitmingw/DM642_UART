@@ -36,14 +36,14 @@ EMIFA_Config g_dm642ConfigA ={
 	   0x00000002, /*cesec0 CE0 space secondary control register value*/
 	   0x00000002, /*cesec1 CE1 space secondary control register value*/
 	   0x00000002, /*cesec2 CE2 space secondary control register value*/
-	   0x00000073 /*cesec3 CE3 space secondary control register value*/	
+	   0x00000073 /*cesec3 CE3 space secondary control register value*/
 };
 
 VMD642_UART_Config g_uartConfig ={
-	   0x00,/*寄存器IER*/
-	   0x57,/*寄存器FCR*/
-	   0x03,/*寄存器LCR*/
-	   0x01,/*寄存器MCR*/
+	   0x00,/*寄存器IER,关所有中断*/
+	   0x57,/*寄存器FCR,队列初始化*/
+	   0x03,/*寄存器LCR,字长=8bit*/
+	   0x01,/*寄存器MCR,控制RTS输出*/
 };
 
 extern far void vectors();
@@ -52,11 +52,14 @@ Uint8 g_ioBuf;
 Uint16 g_uartBuf;
 VMD642_UART_Handle g_uartHandleA;
 
-
+/* Movement controls */
+Uint8 turnLeft[7]  = {0xFF, 0x01, 0x00, 0x04, 0x3F, 0x00, 0x44};
+Uint8 turnRight[7] = {0xFF, 0x01, 0x00, 0x02, 0x3F, 0x00, 0x42};
 
 void main()
 {
-	
+    Uint8 i;
+    
 /*-------------------------------------------------------*/
 /* perform all initializations                           */
 /*-------------------------------------------------------*/
@@ -70,10 +73,11 @@ void main()
 	/*中断向量表的初始化*/
 	//Point to the IRQ vector table
     IRQ_setVecs(vectors);
-   
+
+#if 0
 /*----------------------------------------------------------*/
-/*测试VMD642-A的数字输入与输出*/    
-    
+/*测试VMD642-A的数字输入与输出*/
+
     /*输出测试值*/
     VMD642_rset(VMD642_IOOUT, 0x55);
     /*延时1ms时间*/
@@ -82,7 +86,7 @@ void main()
     g_ioBuf = VMD642_rget(VMD642_IOOUT);
     /*延时1ms时间*/
     VMD642_waitusec(1);
-    
+
     /*输出测试值*/
     VMD642_rset(VMD642_IOOUT, 0xaa);
     /*延时1ms时间*/
@@ -91,19 +95,29 @@ void main()
     g_ioBuf = VMD642_rget(VMD642_IOOUT);
     /*延时1ms时间*/
     VMD642_waitusec(1);
-    
+#endif
+
 /*----------------------------------------------------------*/
 /*测试串口A*/
     /* Open UART */
-    g_uartHandleA = VMD642_UART_open(VMD642_UARTA, 
-    									  UARTHW_VMD642_BAUD_9600, 
+    g_uartHandleA = VMD642_UART_open(VMD642_UARTA,
+    									  UARTHW_VMD642_BAUD_9600,
     									  &g_uartConfig);
 
     for (;;)
   	{
+        /*Turn left*/
+        for (i = 0; i < 7; i++)
+        {
+            VMD642_UART_putChar(g_uartHandleA, turnLeft[i]);
+        }
+		VMD642_waitusec(1000000);
         
-	  	g_uartBuf = VMD642_UART_getChar(g_uartHandleA);
-
-		VMD642_UART_putChar(g_uartHandleA, (g_uartBuf & 0xff));  
+        /*Turn Right*/
+        for (i = 0; i < 7; i++)
+        {
+            VMD642_UART_putChar(g_uartHandleA, turnRight[i]);
+        }
+        VMD642_waitusec(1000000);
     }
 }
