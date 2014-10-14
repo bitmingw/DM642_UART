@@ -100,7 +100,7 @@ void main()
 /*----------------------------------------------------------*/
 /*²âÊÔ´®¿ÚA*/
     /* Open UART */
-    g_uartHandleA = VMD642_UART_open(VMD642_UARTA,
+    g_uartHandleA = VMD642_UART_open(VMD642_UARTB,
     									  UARTHW_VMD642_BAUD_9600,
     									  &g_uartConfig);
 
@@ -111,13 +111,13 @@ void main()
         {
             VMD642_UART_putChar(g_uartHandleA, turnLeft[i]);
         }
-		VMD642_waitusec(1000000);
+		VMD642_waitusec(1000);
         
         /*Turn Right*/
         for (i = 0; i < 7; i++)
         {
             VMD642_UART_putChar(g_uartHandleA, turnRight[i]);
         }
-        VMD642_waitusec(1000000);
+        VMD642_waitusec(1000);
     }
 }

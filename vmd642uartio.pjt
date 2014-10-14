@@ -1,7 +1,7 @@
 ; Code Composer Project File, Version 2.0 (do not modify or remove this line)
 
 [Project Settings]
-ProjectDir="I:\JJ_work\dsp_work\VM_dev\VMD642A_uartio\"
+ProjectDir="C:\Documents and Settings\Administrator\My Documents\DM642_UART\"
 ProjectType=Executable
 CPUFamily=TMS320C64XX
 Tool="Compiler"
@@ -12,8 +12,8 @@ Config="Debug"
 Config="Release"
 
 [Source Files]
-Source="C:\CCStudio_v3.1\boards\evmdm642\csl\lib\cslDM642.lib"
-Source="C:\CCStudio_v3.1\C6000\cgtools\lib\rts6400.lib"
+Source="..\..\..\..\CCStudio_v3.3\boards\evmdm642\csl\lib\cslDM642.lib"
+Source="..\..\..\..\CCStudio_v3.3\C6000\cgtools\lib\rts6400.lib"
 Source="src\dm642main.c"
 Source="src\ves_dm642.asm"
 Source="src\vmd642_cpld.c"
