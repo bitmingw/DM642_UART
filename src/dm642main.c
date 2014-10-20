@@ -8,6 +8,7 @@
 #include <csl_emifa.h>
 #include <csl_irq.h>
 #include <csl_chip.h>
+#include <csl_timer.h>
 
 #include "vmd642.h"
 #include "vmd642_uart.h"
@@ -46,19 +47,37 @@ VMD642_UART_Config g_uartConfig ={
 	   0x01,/*寄存器MCR,控制RTS输出*/
 };
 
+TIMER_Config timerConfig = {
+    0x000002C0, /* interal clock, reset counter and go */
+    0x007270E0, /* interrupt every 0.1s */
+    0x00000000  /* start from 0 */
+};
+
 extern far void vectors();
 
 Uint8 g_ioBuf;
 Uint16 g_uartBuf;
+TIMER_Handle hTimer;
+Uint32 TimerEventId;
 VMD642_UART_Handle g_uartHandleA;
 
 /* Movement controls */
 Uint8 turnLeft[7]  = {0xFF, 0x01, 0x00, 0x04, 0x3F, 0x00, 0x44};
 Uint8 turnRight[7] = {0xFF, 0x01, 0x00, 0x02, 0x3F, 0x00, 0x42};
+Uint8 stay[7]      = {0xFF, 0x01, 0x00, 0x00, 0x00, 0x00, 0x01};
+
+/* Remaining period for the next movement */
+Uint8 controlPeriod = 1;
+
+/* Next moving function */
+Uint8 controlMove = HOLDER_MOV_STAY;
+
+/* State of moving */
+Uint8 hasMoved = 0;
 
 void main()
 {
-    Uint8 i;
+    //Uint8 i;
     
 /*-------------------------------------------------------*/
 /* perform all initializations                           */
@@ -69,55 +88,81 @@ void main()
 	/*EMIFA的初始化，将CE0设为SDRAM空间，CE1设为异步空间
 	 注，DM642支持的是EMIFA，而非EMIF*/
 	EMIFA_config(&g_dm642ConfigA);
+    
+/*----------------------------------------------------------*/
+    /*TIMER初始化，设置TIMER0*/
+    hTimer = TIMER_open(TIMER_DEV0, 0);
+    TimerEventId = TIMER_getEventId(hTimer);
+    TIMER_config(hTimer, &timerConfig);
+    
 /*----------------------------------------------------------*/
 	/*中断向量表的初始化*/
 	//Point to the IRQ vector table
     IRQ_setVecs(vectors);
+    IRQ_globalEnable();
+    IRQ_nmiEnable();
 
-#if 0
-/*----------------------------------------------------------*/
-/*测试VMD642-A的数字输入与输出*/
-
-    /*输出测试值*/
-    VMD642_rset(VMD642_IOOUT, 0x55);
-    /*延时1ms时间*/
-    VMD642_waitusec(1);
-    /*读回测试值*/
-    g_ioBuf = VMD642_rget(VMD642_IOOUT);
-    /*延时1ms时间*/
-    VMD642_waitusec(1);
-
-    /*输出测试值*/
-    VMD642_rset(VMD642_IOOUT, 0xaa);
-    /*延时1ms时间*/
-    VMD642_waitusec(1);
-    /*读回测试值*/
-    g_ioBuf = VMD642_rget(VMD642_IOOUT);
-    /*延时1ms时间*/
-    VMD642_waitusec(1);
-#endif
+    IRQ_map(TimerEventId, 7);
+    IRQ_reset(TimerEventId);
+    IRQ_enable(TimerEventId);
 
 /*----------------------------------------------------------*/
-/*测试串口A*/
+/*在串口B - RS485输出控制信号*/
     /* Open UART */
     g_uartHandleA = VMD642_UART_open(VMD642_UARTB,
     									  UARTHW_VMD642_BAUD_9600,
     									  &g_uartConfig);
 
+    /* Open Timer */
+    TIMER_start(hTimer);
+    
     for (;;)
   	{
-        /*Turn left*/
-        for (i = 0; i < 7; i++)
-        {
-            VMD642_UART_putChar(g_uartHandleA, turnLeft[i]);
+        while(!IRQ_test(TimerEventId));
+        if (controlMove == HOLDER_MOV_STAY && hasMoved == 1) {
+            controlPeriod = 9;
+            controlMove = HOLDER_MOV_LEFT;
+            hasMoved = 0;
         }
-		VMD642_waitusec(1000);
-        
-        /*Turn Right*/
-        for (i = 0; i < 7; i++)
-        {
-            VMD642_UART_putChar(g_uartHandleA, turnRight[i]);
+        if (controlMove == HOLDER_MOV_LEFT && hasMoved == 1) {
+            controlPeriod = 9;
+            controlMove = HOLDER_MOV_RIGHT;
+            hasMoved = 0;
         }
-        VMD642_waitusec(1000);
+        if (controlMove == HOLDER_MOV_RIGHT && hasMoved == 1) {
+            controlPeriod = 1;
+            controlMove = HOLDER_MOV_STAY;
+            hasMoved = 0;
+        }
+    }
+}
+
+interrupt void Turning(void)
+{
+    Uint8 i;
+    if (controlPeriod) {
+        controlPeriod--;
+    } else {
+        if (controlMove == HOLDER_MOV_STAY) {
+            for (i = 0; i < 7; i++)
+            {
+                VMD642_UART_putChar(g_uartHandleA, stay[i]);
+            }
+            hasMoved = 1;
+        }
+        else if (controlMove == HOLDER_MOV_LEFT) {
+            for (i = 0; i < 7; i++)
+            {
+                VMD642_UART_putChar(g_uartHandleA, turnLeft[i]);
+            }
+            hasMoved = 1;
+        }
+        else if (controlMove == HOLDER_MOV_RIGHT) {
+            for (i = 0; i < 7; i++)
+            {
+                VMD642_UART_putChar(g_uartHandleA, turnRight[i]);
+            } 
+            hasMoved = 1;
+        }
     }
 }
