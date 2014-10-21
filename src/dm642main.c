@@ -48,7 +48,7 @@ VMD642_UART_Config g_uartConfig ={
 };
 
 TIMER_Config timerConfig = {
-    0x000002C0, /* interal clock, reset counter and go */
+    0x00000280, /* interal clock, reset counter and hold */
     0x007270E0, /* interrupt every 0.1s */
     0x00000000  /* start from 0 */
 };
@@ -102,7 +102,7 @@ void main()
     IRQ_globalEnable();
     IRQ_nmiEnable();
 
-    IRQ_map(TimerEventId, 7);
+    IRQ_map(TimerEventId, 14);
     IRQ_reset(TimerEventId);
     IRQ_enable(TimerEventId);
 
@@ -118,51 +118,11 @@ void main()
     
     for (;;)
   	{
-        while(!IRQ_test(TimerEventId));
-        if (controlMove == HOLDER_MOV_STAY && hasMoved == 1) {
-            controlPeriod = 9;
-            controlMove = HOLDER_MOV_LEFT;
-            hasMoved = 0;
-        }
-        if (controlMove == HOLDER_MOV_LEFT && hasMoved == 1) {
-            controlPeriod = 9;
-            controlMove = HOLDER_MOV_RIGHT;
-            hasMoved = 0;
-        }
-        if (controlMove == HOLDER_MOV_RIGHT && hasMoved == 1) {
-            controlPeriod = 1;
-            controlMove = HOLDER_MOV_STAY;
-            hasMoved = 0;
-        }
+
     }
 }
 
-interrupt void Turning(void)
+interrupt void c_int14(void)
 {
-    Uint8 i;
-    if (controlPeriod) {
-        controlPeriod--;
-    } else {
-        if (controlMove == HOLDER_MOV_STAY) {
-            for (i = 0; i < 7; i++)
-            {
-                VMD642_UART_putChar(g_uartHandleA, stay[i]);
-            }
-            hasMoved = 1;
-        }
-        else if (controlMove == HOLDER_MOV_LEFT) {
-            for (i = 0; i < 7; i++)
-            {
-                VMD642_UART_putChar(g_uartHandleA, turnLeft[i]);
-            }
-            hasMoved = 1;
-        }
-        else if (controlMove == HOLDER_MOV_RIGHT) {
-            for (i = 0; i < 7; i++)
-            {
-                VMD642_UART_putChar(g_uartHandleA, turnRight[i]);
-            } 
-            hasMoved = 1;
-        }
-    }
+    printf("Interrupt successfully!\n");
 }
