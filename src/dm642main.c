@@ -65,20 +65,24 @@ VMD642_UART_Handle g_uartHandleA;
 Uint8 turnLeft[7]  = {0xFF, 0x01, 0x00, 0x04, 0x3F, 0x00, 0x44};
 Uint8 turnRight[7] = {0xFF, 0x01, 0x00, 0x02, 0x3F, 0x00, 0x42};
 Uint8 stay[7]      = {0xFF, 0x01, 0x00, 0x00, 0x00, 0x00, 0x01};
+Uint8 moveSchedule[4] = {HOLDER_MOV_STAY, HOLDER_MOV_LEFT, HOLDER_MOV_STAY, HOLDER_MOV_RIGHT};
+
+/* Expected period for the next movement */
+static int schedulePeriod = 10;
 
 /* Remaining period for the next movement */
-Uint8 controlPeriod = 1;
+static int controlPeriod = 1;
 
-/* Next moving function */
-Uint8 controlMove = HOLDER_MOV_STAY;
+/* Moving function query */
+static Uint32 curMove = 0;
 
-/* State of moving */
-Uint8 hasMoved = 0;
+void doMove(void);
+void scheduleNextMove(void);
 
 void main()
 {
     //Uint8 i;
-    
+
 /*-------------------------------------------------------*/
 /* perform all initializations                           */
 /*-------------------------------------------------------*/
@@ -88,13 +92,13 @@ void main()
 	/*EMIFA的初始化，将CE0设为SDRAM空间，CE1设为异步空间
 	 注，DM642支持的是EMIFA，而非EMIF*/
 	EMIFA_config(&g_dm642ConfigA);
-    
+
 /*----------------------------------------------------------*/
     /*TIMER初始化，设置TIMER0*/
     hTimer = TIMER_open(TIMER_DEV0, 0);
     TimerEventId = TIMER_getEventId(hTimer);
     TIMER_config(hTimer, &timerConfig);
-    
+
 /*----------------------------------------------------------*/
 	/*中断向量表的初始化*/
 	//Point to the IRQ vector table
@@ -115,7 +119,7 @@ void main()
 
     /* Open Timer */
     TIMER_start(hTimer);
-    
+
     for (;;)
   	{
 
@@ -124,5 +128,47 @@ void main()
 
 interrupt void c_int14(void)
 {
-    printf("Interrupt successfully!\n");
+    controlPeriod--;
+    if (controlPeriod <= 0)
+    {
+        doMove();
+        scheduleNextMove();
+    }
+    return;
+}
+
+void doMove(void)
+{
+    Uint8 i;
+    if (moveSchedule[curMove] == HOLDER_MOV_STAY) {
+        for (i = 0; i < 7; i++) {
+            VMD642_UART_putChar(g_uartHandleA, stay[i]);
+        }
+    }
+    if (moveSchedule[curMove] == HOLDER_MOV_LEFT) {
+        for (i = 0; i < 7; i++) {
+            VMD642_UART_putChar(g_uartHandleA, turnLeft[i]);
+        }
+    }
+    if (moveSchedule[curMove] == HOLDER_MOV_RIGHT) {
+        for (i = 0; i < 7; i++) {
+            VMD642_UART_putChar(g_uartHandleA, turnRight[i]);
+        }
+    }
+}
+
+void scheduleNextMove(void)
+{
+    curMove++;
+    curMove %= 4;
+    if (moveSchedule[curMove] == HOLDER_MOV_LEFT) {
+        schedulePeriod = 9;
+    }
+    if (moveSchedule[curMove] == HOLDER_MOV_RIGHT) {
+        schedulePeriod = 9;
+    }
+    if (moveSchedule[curMove] == HOLDER_MOV_STAY) {
+        schedulePeriod = 1;
+    }
+    controlPeriod = schedulePeriod;
 }

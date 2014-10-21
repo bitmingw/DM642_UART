@@ -20,17 +20,17 @@
    .global _vector5
    .global _vector6
    .global _vector7
-   .global _vector8  
-   .global _vector9	  
-   .global _vector10 
-   .global _vector11 	
-   .global _vector12    
-   .global _vector13   
-   .global _c_int14  
-   .global _vector15   
+   .global _vector8
+   .global _vector9
+   .global _vector10
+   .global _vector11
+   .global _vector12
+   .global _vector13
+   .global _c_int14
+   .global _vector15
 
 *------------------------------------------------------------------------------
-* Global symbols referenced in this file but defined somewhere else. 
+* Global symbols referenced in this file but defined somewhere else.
 * Remember that your interrupt service routines need to be referenced here.
 *------------------------------------------------------------------------------
    .ref _c_int00
@@ -45,8 +45,8 @@ VEC_ENTRY .macro addr
     B     B0
     LDW   *B15++,B0
     NOP   2
-    NOP   
-    NOP   
+    NOP
+    NOP
    .endm
 
 
@@ -76,7 +76,7 @@ _vector4:   VEC_ENTRY _vec_dummy
 _vector5:   VEC_ENTRY _vec_dummy
 _vector6:   VEC_ENTRY _vec_dummy
 _vector7:   VEC_ENTRY _vec_dummy
-_vector8:   VEC_ENTRY _vec_dummy   
+_vector8:   VEC_ENTRY _vec_dummy
 _vector9:   VEC_ENTRY _vec_dummy
 _vector10:  VEC_ENTRY _vec_dummy
 _vector11:  VEC_ENTRY _vec_dummy
