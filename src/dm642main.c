@@ -67,11 +67,8 @@ Uint8 turnRight[7] = {0xFF, 0x01, 0x00, 0x02, 0x3F, 0x00, 0x42};
 Uint8 stay[7]      = {0xFF, 0x01, 0x00, 0x00, 0x00, 0x00, 0x01};
 Uint8 moveSchedule[4] = {HOLDER_MOV_STAY, HOLDER_MOV_LEFT, HOLDER_MOV_STAY, HOLDER_MOV_RIGHT};
 
-/* Expected period for the next movement */
-static int schedulePeriod = 10;
-
 /* Remaining period for the next movement */
-static int controlPeriod = 1;
+static int controlPeriod = 10;
 
 /* Moving function query */
 static Uint32 curMove = 0;
@@ -159,16 +156,15 @@ void doMove(void)
 
 void scheduleNextMove(void)
 {
-    curMove++;
-    curMove %= 4;
     if (moveSchedule[curMove] == HOLDER_MOV_LEFT) {
-        schedulePeriod = 9;
+        controlPeriod = 150;
     }
     if (moveSchedule[curMove] == HOLDER_MOV_RIGHT) {
-        schedulePeriod = 9;
+        controlPeriod = 150;
     }
     if (moveSchedule[curMove] == HOLDER_MOV_STAY) {
-        schedulePeriod = 1;
+        controlPeriod = 30;
     }
-    controlPeriod = schedulePeriod;
+    curMove++;
+    curMove %= 4;
 }
